@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Notas</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1 class="app-title">Notas</h1>
+      <div class="header-actions">
+        <button type="button" id="btn-new-note" class="btn btn-primary btn-create-note" title="Nueva nota" aria-label="Crear nota">+</button>
+        <div class="dropdown-wrap">
+          <button type="button" id="btn-global-menu" class="btn btn-icon" title="Más opciones" aria-haspopup="true" aria-expanded="false">⋮</button>
+          <div id="global-menu" class="dropdown-menu" hidden>
+            <button type="button" class="dropdown-item" data-action="export-all">Exportar todo (JSON)</button>
+            <button type="button" class="dropdown-item" data-action="import-all">Importar (JSON)</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <aside class="panel-list">
+        <ul id="notes-list" class="notes-list" aria-label="Lista de notas"></ul>
+        <p id="empty-state" class="empty-state">No hay notas. Pulsa «+ Nota» para crear una.</p>
+      </aside>
+
+      <section class="panel-editor">
+        <div id="editor-placeholder" class="editor-placeholder" aria-hidden="true"></div>
+        <div id="detail-view" class="detail-view" hidden>
+          <h2 id="detail-title" class="detail-title"></h2>
+          <p id="detail-updated" class="detail-updated"></p>
+          <div id="detail-content" class="detail-content"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <input type="file" id="input-import-file" accept=".json,.txt,application/json,text/plain" hidden>
+
+  <div id="modal-overlay" class="modal-overlay" hidden aria-hidden="true">
+    <div id="note-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
+      <h2 id="modal-heading" class="modal-heading">Nueva nota</h2>
+      <div class="modal-body">
+        <label for="modal-title" class="modal-label">Título</label>
+        <input type="text" id="modal-title" class="modal-input" placeholder="Título de la nota" autocomplete="off" required>
+        <div class="modal-toolbar" role="toolbar" aria-label="Formato de texto">
+          <button type="button" class="btn-toolbar" data-command="bold" title="Negrita" aria-label="Negrita"><i class="fa-solid fa-bold" aria-hidden="true"></i></button>
+          <button type="button" class="btn-toolbar" data-command="italic" title="Cursiva" aria-label="Cursiva"><i class="fa-solid fa-italic" aria-hidden="true"></i></button>
+          <button type="button" class="btn-toolbar" data-command="underline" title="Subrayado" aria-label="Subrayado"><i class="fa-solid fa-underline" aria-hidden="true"></i></button>
+          <span class="toolbar-sep" aria-hidden="true"></span>
+          <button type="button" class="btn-toolbar" data-command="justifyLeft" title="Alinear izquierda" aria-label="Alinear izquierda"><i class="fa-solid fa-align-left" aria-hidden="true"></i></button>
+          <button type="button" class="btn-toolbar" data-command="justifyCenter" title="Centrar" aria-label="Centrar"><i class="fa-solid fa-align-center" aria-hidden="true"></i></button>
+          <button type="button" class="btn-toolbar" data-command="justifyRight" title="Alinear derecha" aria-label="Alinear derecha"><i class="fa-solid fa-align-right" aria-hidden="true"></i></button>
+          <span class="toolbar-sep" aria-hidden="true"></span>
+          <button type="button" class="btn-toolbar" data-command="insertUnorderedList" title="Lista con viñetas" aria-label="Lista con viñetas"><i class="fa-solid fa-list-ul" aria-hidden="true"></i></button>
+          <button type="button" class="btn-toolbar" data-command="insertOrderedList" title="Lista numerada" aria-label="Lista numerada"><i class="fa-solid fa-list-ol" aria-hidden="true"></i></button>
+          <button type="button" class="btn-toolbar" data-command="createLink" title="Enlace" aria-label="Enlace"><i class="fa-solid fa-link" aria-hidden="true"></i></button>
+        </div>
+        <div id="modal-content" class="modal-editor" contenteditable="true" role="textbox" aria-label="Contenido de la nota" data-placeholder="Escribe aquí..."></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="btn-modal-cancel" class="btn btn-secondary">Cancelar</button>
+        <button type="button" id="btn-modal-submit" class="btn btn-primary">Crear nota</button>
+      </div>
+    </div>
+    <div id="link-popup-wrap" class="link-popup-wrap" hidden aria-hidden="true">
+      <div class="link-popup" role="dialog" aria-modal="true" aria-labelledby="link-popup-heading">
+        <h2 id="link-popup-heading" class="link-popup-heading">Insertar enlace</h2>
+        <input type="text" id="link-url-input" class="link-popup-input" placeholder="https://" autocomplete="off">
+        <div class="link-popup-actions">
+          <button type="button" id="link-popup-cancel" class="btn btn-secondary">Cancelar</button>
+          <button type="button" id="link-popup-insert" class="btn btn-primary">Insertar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="note-menu" class="dropdown-menu dropdown-menu-note" hidden>
+    <button type="button" class="dropdown-item" data-action="edit">Editar</button>
+    <button type="button" class="dropdown-item" data-action="rename">Renombrar</button>
+    <button type="button" class="dropdown-item" data-action="duplicate">Duplicar</button>
+    <button type="button" class="dropdown-item" data-action="export-json">Exportar (JSON)</button>
+    <button type="button" class="dropdown-item" data-action="export-txt">Exportar (TXT)</button>
+    <button type="button" class="dropdown-item" data-action="import-content">Importar contenido</button>
+    <button type="button" class="dropdown-item dropdown-item-danger" data-action="delete">Eliminar</button>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
